@@ -49,13 +49,19 @@ def _kill_tree(process):
 
 
 def _work_size(directory):
+    # os.walk calls onerror when a renderer removes a child directory during
+    # traversal (notably on Windows). Ignore only this normal cleanup race.
+    def onerror(error):
+        if not isinstance(error, FileNotFoundError):
+            raise error
+
     size = 0
-    for path in directory.rglob("*"):
-        try:
-            if path.is_file():
-                size += path.stat().st_size
-        except FileNotFoundError:
-            pass  # renderer cleanup can race this sample
+    for parent, _, filenames in os.walk(directory, onerror=onerror):
+        for filename in filenames:
+            try:
+                size += (Path(parent) / filename).stat().st_size
+            except FileNotFoundError:
+                pass
     return size
 
 

@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 import platform
+import re
 import subprocess
 import sys
 import uuid
@@ -112,6 +113,25 @@ def process_job(work, config):
                     if isinstance(item, pikepdf.Stream)
                     and item.get("/Subtype") == pikepdf.Name("/Form")
                 )
+        # PDF CMap mapping blocks are limited to 100 entries. Older GS
+        # versions can silently accept oversized blocks; enforce this here.
+        for obj in original.objects:
+            if not isinstance(obj, pikepdf.Dictionary) or obj.get("/Type") != pikepdf.Name("/Font"):
+                continue
+            if "/ToUnicode" not in obj:
+                continue
+            mapping = obj["/ToUnicode"]
+            if not isinstance(mapping, pikepdf.Stream):
+                raise InputError("Invalid ToUnicode CMap object.")
+            data = mapping.read_bytes()
+            if len(data) > min(16 * 1024 * 1024, limits.max_work_bytes):
+                raise LimitError("Decoded ToUnicode CMap size limit exceeded.")
+            data = re.sub(rb"%[^\r\n]*", b"", data)
+            for count in re.findall(
+                rb"(?<![\w.])(-?\d+)\s+begin(?:bfchar|bfrange|codespacerange)\b", data
+            ):
+                if not 0 <= int(count) <= 100:
+                    raise InputError("Malformed ToUnicode CMap block count; re-export the source.")
         identifiers = tuple(bytes(item) for item in original.trailer.get("/ID", []))
         annotations = sum(len(page.obj.get("/Annots", [])) for page in original.pages)
         issues = original.check_pdf_syntax() + original.get_warnings()

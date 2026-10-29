@@ -475,7 +475,7 @@ def test_malformed_unicode_cmap_is_rejected(tmp_path):
             modified = True
         assert modified
         pdf.save(malformed)
-    with pytest.raises((GhostscriptError, ProcessingError)):
+    with pytest.raises((InputError, GhostscriptError, ProcessingError)):
         blind_pdf(malformed, tmp_path / "output.pdf")
 
 

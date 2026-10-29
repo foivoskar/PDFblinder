@@ -1,6 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
+from sysconfig import get_path
 
 import pikepdf
 import pytest
@@ -29,9 +30,8 @@ def test_cli_success_and_overwrite_protection(tmp_path, entrypoint):
         command = [sys.executable, "-m", "pdfblinder"]
     else:
         executable = str(
-            Path(sys.executable).with_name(
-                "pdfblinder.exe" if sys.platform == "win32" else "pdfblinder"
-            )
+            Path(get_path("scripts"))
+            / ("pdfblinder.exe" if sys.platform == "win32" else "pdfblinder")
         )
         assert executable is not None
         command = [executable]

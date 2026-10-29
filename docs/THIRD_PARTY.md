@@ -9,7 +9,7 @@ or grant rights to submitted manuscripts or embedded fonts/images.
 | pikepdf | MPL-2.0; includes/uses qpdf and other third-party components: https://github.com/pikepdf/pikepdf |
 | pypdf | BSD-3-Clause: https://github.com/py-pdf/pypdf |
 | pypdfium2 / PDFium binaries | Apache-2.0/BSD-3-Clause plus bundled dependency notices: https://github.com/pypdfium2-team/pypdfium2 |
-| Pillow | HPND and bundled component notices: https://github.com/python-pillow/Pillow |
+| Pillow | MIT-CMU and bundled component notices: https://github.com/python-pillow/Pillow |
 | psutil | BSD-3-Clause: https://github.com/giampaolo/psutil |
 
 The installed distributions and their bundled notices are authoritative for the
