@@ -107,6 +107,18 @@ def verify_independently(source, limits, *, expected_pages, profile):
                                 image.getexif()
                                 or image.info.get("comment")
                                 or image.info.get("xmp")
+                                or any(
+                                    not (
+                                        marker == "APP0"
+                                        and payload.startswith(b"JFIF\0")
+                                        and len(payload) == 14
+                                        and payload[12:14] == b"\0\0"
+                                        or marker == "APP14"
+                                        and payload.startswith(b"Adobe")
+                                        and len(payload) == 12
+                                    )
+                                    for marker, payload in image.applist
+                                )
                             ):
                                 raise InspectionError(
                                     "JPEG auxiliary metadata remains; use raster or re-export."

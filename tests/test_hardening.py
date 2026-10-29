@@ -505,3 +505,38 @@ def test_fractional_raster_page_dimensions(tmp_path, dimensions):
         pdf.add_blank_page(page_size=dimensions)
         pdf.save(source)
     blind_pdf(source, tmp_path / "output.pdf", profile="raster")
+
+
+@pytest.mark.parametrize(
+    "marker,payload",
+    [
+        (b"\xff\xe1", b"http://ns.adobe.com/xap/1.0/\0Private Author"),
+        (b"\xff\xed", b"Photoshop 3.0\0Private Author"),
+        (b"\xff\xfe", b"Private comment"),
+        (b"\xff\xe0", b"JFXX\0Private thumbnail"),
+    ],
+)
+def test_independent_jpeg_auxiliary_metadata_rejected(tmp_path, marker, payload):
+    from PIL import Image
+
+    jpeg = BytesIO()
+    with Image.new("RGB", (8, 8), (30, 60, 90)) as image:
+        image.save(jpeg, format="JPEG")
+    data = jpeg.getvalue()
+    data = data[:2] + marker + (len(payload) + 2).to_bytes(2, "big") + payload + data[2:]
+    output = tmp_path / "auxiliary.pdf"
+    with pikepdf.Pdf.new() as pdf:
+        page = pdf.add_blank_page(page_size=(300, 400))
+        image = pdf.make_stream(data)
+        image["/Type"] = pikepdf.Name("/XObject")
+        image["/Subtype"] = pikepdf.Name("/Image")
+        image["/Width"] = 8
+        image["/Height"] = 8
+        image["/ColorSpace"] = pikepdf.Name("/DeviceRGB")
+        image["/BitsPerComponent"] = 8
+        image["/Filter"] = pikepdf.Name("/DCTDecode")
+        page.obj["/Resources"] = pikepdf.Dictionary(XObject=pikepdf.Dictionary(Im0=image))
+        page.obj["/Contents"] = pdf.make_stream(b"q 40 0 0 40 30 300 cm /Im0 Do Q")
+        pdf.save(output)
+    with pytest.raises(InspectionError, match="JPEG auxiliary"):
+        verify_independently(output, Limits(), expected_pages=1, profile="vector")

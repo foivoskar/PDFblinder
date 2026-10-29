@@ -124,7 +124,9 @@ See [deployment guidance](docs/DEPLOYMENT.md) and [security policy](SECURITY.md)
 - Establish anonymity against steganography, font/image fingerprinting or an
   attacker who deliberately encodes identity into legitimate-looking content.
 - Exhaustively rewrite metadata internal to every font/image format in vector
-  mode. Recognized JPEG EXIF/comment/XMP remaining in output causes rejection.
+  mode. JPEG auxiliary application/comment segments (including EXIF, XMP,
+  Photoshop/IPTC and thumbnails) remaining in output cause rejection. Only
+  minimal JFIF and Adobe color-transform headers are allowed.
 - Preserve annotations (including highlights), links, bookmarks, structure tags,
   forms, signatures or original accessibility information.
 - Guarantee forensic erasure from storage, swap, backups or cloud synchronization.
