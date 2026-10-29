@@ -1,0 +1,72 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install Ghostscript on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghostscript
+
+      - name: Install Ghostscript on macOS
+        if: runner.os == 'macOS'
+        run: |
+          if ! command -v gs >/dev/null 2>&1; then
+            brew install ghostscript
+          fi
+
+      - name: Install Ghostscript on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install ghostscript --yes --no-progress
+          if ($LASTEXITCODE -ne 0) {
+            throw "Ghostscript installation failed."
+          }
+          $gs = Get-ChildItem -Path "$env:ProgramFiles\gs" `
+            -Filter gswin64c.exe -Recurse |
+            Select-Object -First 1
+          if (-not $gs) {
+            throw "Ghostscript executable was not found."
+          }
+          $gs.DirectoryName |
+            Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Install PDFblinder and test dependencies
+        run: python -m pip install ".[dev]"
+
+      - name: Show tool versions
+        run: |
+          python --version
+          pdfblinder --version
+          python -c "import subprocess; from pdfblinder.ghostscript import find_ghostscript; subprocess.run([find_ghostscript(), '--version'], check=True)"
+
+      - name: Run tests
+        run: python -m pytest -q
