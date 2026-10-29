@@ -1,0 +1,4 @@
+include CHANGELOG.md SECURITY.md Dockerfile .dockerignore
+recursive-include docs *.md
+include .github/workflows/tests.yml
+recursive-include scripts *.py

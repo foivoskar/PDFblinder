@@ -32,9 +32,7 @@ def test_rejects_wrong_page_count(clean_pdf):
 
 def test_rejects_reused_identifier(clean_pdf):
     with pikepdf.Pdf.open(clean_pdf) as pdf:
-        original_ids = tuple(
-            bytes(identifier) for identifier in pdf.trailer["/ID"]
-        )
+        original_ids = tuple(bytes(identifier) for identifier in pdf.trailer["/ID"])
 
     with pytest.raises(VerificationError, match="identifier remains"):
         verify_pdf(
@@ -57,14 +55,16 @@ def test_rejects_contaminated_pdf(clean_pdf, tmp_path, contamination):
         elif contamination == "catalog_metadata":
             pdf.Root["/Metadata"] = pdf.make_stream(b"Private metadata")
         elif contamination == "annotation":
-            pdf.pages[0].obj["/Annots"] = pikepdf.Array([
-                pikepdf.Dictionary(
-                    Type=pikepdf.Name("/Annot"),
-                    Subtype=pikepdf.Name("/Text"),
-                    Rect=pikepdf.Array([0, 0, 10, 10]),
-                    Contents=pikepdf.String("Private comment"),
-                )
-            ])
+            pdf.pages[0].obj["/Annots"] = pikepdf.Array(
+                [
+                    pikepdf.Dictionary(
+                        Type=pikepdf.Name("/Annot"),
+                        Subtype=pikepdf.Name("/Text"),
+                        Rect=pikepdf.Array([0, 0, 10, 10]),
+                        Contents=pikepdf.String("Private comment"),
+                    )
+                ]
+            )
         else:
             pdf.pages[0].obj["/Group"] = pikepdf.Dictionary(
                 Type=pikepdf.Name("/Group"),
