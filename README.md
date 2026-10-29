@@ -1,10 +1,17 @@
 # PDFblinder
 
+[![PyPI](https://img.shields.io/pypi/v/pdfblinder)](https://pypi.org/project/pdfblinder/)
+[![Tests](https://github.com/foivoskar/PDFblinder/actions/workflows/tests.yml/badge.svg)](https://github.com/foivoskar/PDFblinder/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A Python command-line tool that reconstructs PDFs with Ghostscript,
 removes selected structural metadata and auxiliary objects with pikepdf,
 and verifies the serialized result before creating the destination file.
 
 Designed for preparing documents for double-blind review.
+
+**Structural sanitation does not guarantee complete anonymity.**
+Identifying visible content remains. Always inspect the output.
 
 ## Requirements
 
@@ -13,34 +20,27 @@ Designed for preparing documents for double-blind review.
 - Ghostscript available as `gs`, `gswin64c`, or `gswin32c`,
   or supplied explicitly with `--gs`.
 
-The current local test run covers macOS. Linux and Windows compatibility
-must also be validated before claiming support on those systems.
+The test suite has passed on GitHub Actions on Linux, macOS, and Windows
+with Python 3.11 and 3.14.
 
 ## Installation
 
-From the project directory, create a virtual environment:
+Install from [PyPI](https://pypi.org/project/pdfblinder/), preferably in
+a virtual environment:
 
 ```sh
-python -m venv .venv
+python -m pip install pdfblinder
 ```
 
-Activate it on macOS or Linux:
+Verify the installation:
 
 ```sh
-source .venv/bin/activate
+pdfblinder --version
 ```
 
-Or activate it in Windows PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Install PDFblinder:
-
-```sh
-python -m pip install .
-```
+Ghostscript is not installed by pip. Install it separately using your
+system's package manager or the
+[official Ghostscript downloads](https://ghostscript.com/releases/).
 
 ## Usage
 
@@ -48,7 +48,7 @@ python -m pip install .
 pdfblinder input.pdf output.pdf
 ```
 
-Paths containing spaces must be quoted:
+Quote paths containing spaces:
 
 ```sh
 pdfblinder "original manuscript.pdf" "review copy.pdf"
@@ -92,8 +92,6 @@ files or an incomplete destination.
 
 ## Scope and limitations
 
-PDFblinder performs structural sanitation, not guaranteed anonymization.
-
 - Names, affiliations, acknowledgements, citations, watermarks, and other
   identifying visible content remain.
 - Embedded font and image payloads are not exhaustively inspected or
@@ -109,11 +107,31 @@ PDFblinder performs structural sanitation, not guaranteed anonymization.
 - Output identifiers are newly generated; original identifiers are checked
   for reuse. Filesystem timestamps and permissions are newly created.
   The output filename is chosen by the user.
-- Ghostscript and pikepdf must be kept updated. Ghostscript's SAFER mode
-  is enabled, but it is not a complete operating-system sandbox.
+- Keep Ghostscript and pikepdf updated. Ghostscript's SAFER mode is enabled,
+  but it is not a complete operating-system sandbox.
 - The timeout applies to Ghostscript reconstruction, not the entire job.
 
 ## Development
+
+From a checkout of this repository, create a virtual environment:
+
+```sh
+python -m venv .venv
+```
+
+Activate it on macOS or Linux:
+
+```sh
+source .venv/bin/activate
+```
+
+Or in Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install the development dependencies and run the tests:
 
 ```sh
 python -m pip install -e '.[dev]'
@@ -138,5 +156,5 @@ GNU AGPL or a commercial license from Artifex.
 
 The MIT license for PDFblinder does not waive any third-party obligations.
 Before redistributing Ghostscript or deploying a hosted PDF-processing
-service, evaluate the applicable Ghostscript licensing terms:
-https://www.ghostscript.com/licensing/
+service, evaluate the applicable
+[Ghostscript licensing terms](https://www.ghostscript.com/licensing/).
