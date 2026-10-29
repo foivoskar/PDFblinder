@@ -1,7 +1,7 @@
-from pathlib import Path
-import shutil
 import subprocess
 import sys
+from pathlib import Path
+from sysconfig import get_path
 
 import pikepdf
 import pytest
@@ -29,7 +29,10 @@ def test_cli_success_and_overwrite_protection(tmp_path, entrypoint):
     if entrypoint == "module":
         command = [sys.executable, "-m", "pdfblinder"]
     else:
-        executable = shutil.which("pdfblinder")
+        executable = str(
+            Path(get_path("scripts"))
+            / ("pdfblinder.exe" if sys.platform == "win32" else "pdfblinder")
+        )
         assert executable is not None
         command = [executable]
 
@@ -63,9 +66,7 @@ def test_cli_success_and_overwrite_protection(tmp_path, entrypoint):
 @pytest.mark.parametrize("timeout", ["0", "-1", "nan", "inf", "abc"])
 def test_cli_rejects_invalid_timeout(tmp_path, timeout):
     output = tmp_path / "output.pdf"
-    result = run_cli(
-        "--timeout", timeout, tmp_path / "input.pdf", output
-    )
+    result = run_cli("--timeout", timeout, tmp_path / "input.pdf", output)
     assert result.returncode == 2
     assert "Timeout must" in result.stderr
     assert not output.exists()
@@ -94,4 +95,4 @@ def test_cli_invalid_pdf(tmp_path):
 def test_cli_version():
     result = run_cli("--version")
     assert result.returncode == 0
-    assert result.stdout.strip() == "pdfblinder 0.1.0"
+    assert result.stdout.strip() == "pdfblinder 0.2.0.dev0"

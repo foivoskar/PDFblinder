@@ -16,3 +16,8 @@ htmlcov/
 
 # macOS
 .DS_Store
+
+# Confidential local validation artifacts
+work/
+outputs/
+*.audit.json

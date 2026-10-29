@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pikepdf
 import pytest
 
@@ -36,9 +34,7 @@ def test_reconstruction_and_cleanup(tmp_path):
         assert intermediate != source
         with pikepdf.Pdf.open(intermediate) as pdf:
             assert len(pdf.pages) == 2
-            for page, expected in zip(
-                pdf.pages, [(300, 400), (500, 600)]
-            ):
+            for page, expected in zip(pdf.pages, [(300, 400), (500, 600)]):
                 box = [float(value) for value in page.mediabox]
                 assert box[2] - box[0] == pytest.approx(expected[0])
                 assert box[3] - box[1] == pytest.approx(expected[1])

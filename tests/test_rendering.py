@@ -11,14 +11,18 @@ def render_pdf(source, destination):
     subprocess.run(
         [
             find_ghostscript(),
-            "-q", "-dSAFER", "-dBATCH", "-dNOPAUSE",
+            "-q",
+            "-dSAFER",
+            "-dBATCH",
+            "-dNOPAUSE",
             "-dShowAnnots=false",
             "-sDEVICE=png16m",
             "-r144",
             "-dTextAlphaBits=4",
             "-dGraphicsAlphaBits=4",
             f"-sOutputFile={destination}",
-            "-f", str(source),
+            "-f",
+            str(source),
         ],
         capture_output=True,
         timeout=30,
@@ -32,14 +36,14 @@ def test_reconstruction_preserves_rendered_appearance(tmp_path):
 
     with pikepdf.Pdf.new() as pdf:
         page = pdf.add_blank_page(page_size=(300, 400))
-        font = pdf.make_indirect(pikepdf.Dictionary(
-            Type=pikepdf.Name("/Font"),
-            Subtype=pikepdf.Name("/Type1"),
-            BaseFont=pikepdf.Name("/Helvetica"),
-        ))
-        page.obj["/Resources"] = pikepdf.Dictionary(
-            Font=pikepdf.Dictionary(F1=font)
+        font = pdf.make_indirect(
+            pikepdf.Dictionary(
+                Type=pikepdf.Name("/Font"),
+                Subtype=pikepdf.Name("/Type1"),
+                BaseFont=pikepdf.Name("/Helvetica"),
+            )
         )
+        page.obj["/Resources"] = pikepdf.Dictionary(Font=pikepdf.Dictionary(F1=font))
         page.obj["/Contents"] = pdf.make_stream(
             b"0.1 0.3 0.7 rg 25 250 250 100 re f\n"
             b"1 0.8 0.2 rg 50 275 80 50 re f\n"
@@ -62,6 +66,4 @@ def test_reconstruction_preserves_rendered_appearance(tmp_path):
         assert original.mode == blinded.mode == "RGB"
         difference = ImageChops.difference(original, blinded)
         channel_errors = ImageStat.Stat(difference).mean
-        assert max(channel_errors) <= 0.5, (
-            f"Rendered appearance changed: {channel_errors}"
-        )
+        assert max(channel_errors) <= 0.5, f"Rendered appearance changed: {channel_errors}"

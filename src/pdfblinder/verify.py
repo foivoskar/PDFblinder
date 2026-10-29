@@ -5,17 +5,23 @@ from typing import BinaryIO
 
 import pikepdf
 
-from .sanitize import FORBIDDEN_KEYS, PAGE_KEYS
+from .sanitize import NAME_MAPS, PAGE_KEYS, forbidden_fields
 
 
 class VerificationError(RuntimeError):
     """The output does not satisfy the structural sanitation policy."""
 
 
-FORBIDDEN_TYPES = frozenset({
-    "/Metadata", "/EmbeddedFile", "/Filespec",
-    "/Action", "/Annot", "/Sig",
-})
+FORBIDDEN_TYPES = frozenset(
+    {
+        "/Metadata",
+        "/EmbeddedFile",
+        "/Filespec",
+        "/Action",
+        "/Annot",
+        "/Sig",
+    }
+)
 
 
 def verify_pdf(
@@ -55,47 +61,38 @@ def verify_pdf(
             unexpected = set(page.obj.keys()) - PAGE_KEYS
             if unexpected:
                 raise VerificationError(
-                    f"Unexpected fields on page {number}: "
-                    f"{', '.join(sorted(unexpected))}"
+                    f"Unexpected fields on page {number}: {', '.join(sorted(unexpected))}"
                 )
 
-        pending = list(pdf.objects)
-        pending.append(pdf.trailer)
+        pending = [(pdf.Root, False), (pdf.trailer, False)]
         visited = set()
 
         while pending:
-            obj = pending.pop()
-            if not isinstance(
-                obj, (pikepdf.Dictionary, pikepdf.Stream, pikepdf.Array)
-            ):
+            obj, name_map = pending.pop()
+            if not isinstance(obj, (pikepdf.Dictionary, pikepdf.Stream, pikepdf.Array)):
                 continue
 
             if obj.is_indirect:
-                identity = obj.objgen
+                identity = (obj.objgen, name_map)
                 if identity in visited:
                     continue
                 visited.add(identity)
 
             if isinstance(obj, pikepdf.Array):
-                pending.extend(obj)
+                pending.extend((item, False) for item in obj)
                 continue
 
-            forbidden = set(obj.keys()) & FORBIDDEN_KEYS
+            forbidden = forbidden_fields(obj, name_map)
             if forbidden:
-                raise VerificationError(
-                    "Forbidden fields remain: "
-                    + ", ".join(sorted(forbidden))
-                )
-            if str(obj.get("/Type", "")) in FORBIDDEN_TYPES:
+                raise VerificationError("Forbidden fields remain: " + ", ".join(sorted(forbidden)))
+            if not name_map and str(obj.get("/Type", "")) in FORBIDDEN_TYPES:
                 raise VerificationError("Forbidden object type remains.")
 
-            pending.extend(obj.values())
+            pending.extend((value, not name_map and key in NAME_MAPS) for key, value in obj.items())
 
         issues = pdf.check_pdf_syntax()
         issues.extend(pdf.get_warnings())
         if issues:
-            raise VerificationError(
-                "PDF structural checks failed:\n" + "\n".join(issues)
-            )
+            raise VerificationError("PDF structural checks failed:\n" + "\n".join(issues))
 
         return len(pdf.pages)
