@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0.dev0 (unreleased)
+## 0.2.0 (2026-10-29)
 
 - Keep text/vector output as default; reject known hidden-text mechanisms.
 - Add an explicit lossless image-only profile with no source text/font objects.

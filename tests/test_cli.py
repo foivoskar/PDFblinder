@@ -95,4 +95,4 @@ def test_cli_invalid_pdf(tmp_path):
 def test_cli_version():
     result = run_cli("--version")
     assert result.returncode == 0
-    assert result.stdout.strip() == "pdfblinder 0.2.0.dev0"
+    assert result.stdout.strip() == "pdfblinder 0.2.0"

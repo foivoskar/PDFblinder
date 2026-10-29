@@ -7,8 +7,8 @@
 PDF reconstruction and sanitation for scientific review workflows, with
 independent structural/rendering checks and a private audit report.
 
-**This branch is the 0.2 development series. PyPI 0.1.0 does not include these
-safeguards. Technical success is never a certificate of anonymity or editorial
+**Version 0.2.0 adds the safeguards described below.
+Technical success is never a certificate of anonymity or editorial
 approval.** Journals must adopt a policy and validate representative documents
 before deployment. See [editorial acceptance](docs/EDITORIAL_ACCEPTANCE.md).
 
@@ -21,7 +21,7 @@ are required. The existing published release can be installed with:
 python -m pip install pdfblinder
 ```
 
-For this development branch, use an isolated environment from its checkout:
+To install from a source checkout, use an isolated environment:
 
 ```sh
 python -m venv .venv
@@ -148,7 +148,7 @@ rotated/cropped pages, independent tampering checks, resource limits, audit
 privacy and publication failures. Private manuscripts are never test fixtures.
 GitHub Actions tests Linux/macOS/Windows with Python 3.11 and 3.14. Its current
 run is the evidence for a particular commit; previous 0.1 results do not certify
-this development series. See [validation scope](docs/VALIDATION.md).
+this release. See [validation scope](docs/VALIDATION.md).
 
 Exit codes: 0 for technical success requiring human review, 1 for processing
 failure/rejection, 2 for argument errors, 130 for interruption. A failed job
