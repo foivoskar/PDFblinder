@@ -126,3 +126,17 @@ comparison of a synthetic page containing text and vector graphics.
 
 Test PDFs are generated in temporary directories. No private documents
 are needed in the repository.
+
+## License
+
+PDFblinder's original code and documentation are licensed under the
+[MIT License](LICENSE), copyright (c) 2026 foivoskar.
+
+Third-party dependencies retain their own licenses. Ghostscript is installed
+separately and is not bundled with PDFblinder. It is available under the
+GNU AGPL or a commercial license from Artifex.
+
+The MIT license for PDFblinder does not waive any third-party obligations.
+Before redistributing Ghostscript or deploying a hosted PDF-processing
+service, evaluate the applicable Ghostscript licensing terms:
+https://www.ghostscript.com/licensing/
