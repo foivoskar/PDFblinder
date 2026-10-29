@@ -2,7 +2,7 @@
 
 PDFblinder 0.1.0 is a prototype structural sanitizer. It can retain invisible text
 and contains a context-insensitive resource-deletion defect. Do not rely on it as
-an unattended official journal blinding service. The 0.2 development series adds
+an unattended official journal blinding service. PDFblinder 0.2.0 adds
 mitigations and tests; it has not been independently security-certified.
 
 Treat all submitted PDFs as untrusted. Native parsing occurs in a supervised
